@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+import { set } from "lodash";
 import { Request, Response, NextFunction } from "express";
 import { validationResult } from "express-validator";
 import jwt from "express-jwt";
@@ -23,6 +24,12 @@ export const checkJwt = jwt({
 
 export const ensureAuthenticated = (req: Request, res: Response, next: NextFunction) => {
   if (req.isAuthenticated()) {
+    // @ts-ignore
+    // Map sub to id on req.user
+    if (req.user?.sub) {
+      // @ts-ignore
+      set(req.user, "id", req.user.sub);
+    }
     return next();
   }
   /* istanbul ignore next */
