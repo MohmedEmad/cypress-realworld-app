@@ -338,15 +338,19 @@ Cypress.Commands.add("loginByAuth0", (username, password) => {
   // a0.spajs.txs
 
   cy.restoreLocalStorageAuthCache();
-  Cypress.Cookies.defaults({
+  /*Cypress.Cookies.defaults({
     whitelist: new RegExp(
       /(auth0.*|did.*|a0.*|OptanonConsent.*|_hjid.*|_hp2_id.*|_ga.*|ga_.*|_gid.*|ajs_.*|_gcl.*)/g
     ),
-  });
+  });*/
 
   cy.visit("/");
 
   // @ts-ignore
+  cy.getCookies({ domain: null });
+
+  // @ts-ignore
+  /*
   cy.getCookies({ domain: null }).then((cookies) => {
     if (
       cookies.find((cookie) => cookie.name === "auth0") &&
@@ -355,21 +359,22 @@ Cypress.Commands.add("loginByAuth0", (username, password) => {
     ) {
       Cypress.log({ name: "auth0 cookies", message: "User is logged in" });
     } else {
-      cy.get("body").then(($body) => {
-        if ($body.find(".auth0-lock-name").length > 0) {
-          cy.contains("auth0-cypress-demo").should("be.visible");
-        }
-      });
-
-      cy.location("pathname").then((pathname) => {
-        console.log("pathname", pathname);
-        if (pathname.includes("login")) {
-          console.log("perform login", pathname);
-          cy.auth0AllowApp();
-          cy.auth0EnterUserCredentials(username, password);
-          cy.saveLocalStorageAuthCache();
-        }
-      });
+      */
+  cy.get("body").then(($body) => {
+    if ($body.find(".auth0-lock-name").length > 0) {
+      cy.contains("auth0-cypress-demo").should("be.visible");
     }
   });
+
+  cy.location("pathname").then((pathname) => {
+    console.log("pathname", pathname);
+    if (pathname.includes("login")) {
+      console.log("perform login", pathname);
+      cy.auth0AllowApp();
+      cy.auth0EnterUserCredentials(username, password);
+      cy.saveLocalStorageAuthCache();
+    }
+  });
+  //}
+  //});
 });
