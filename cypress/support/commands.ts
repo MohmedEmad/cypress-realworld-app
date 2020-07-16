@@ -317,6 +317,9 @@ Cypress.Cookies.defaults({
   whitelist: "auth0.is.authenticated",
 });
 
+const isAuth0LoginPage = (location: any) =>
+  location.href.includes(`https://${Cypress.env("auth0_domain")}/login`);
+
 Cypress.Commands.add("loginByAuth0", (username, password) => {
   cy.visit("/");
 
@@ -325,11 +328,7 @@ Cypress.Commands.add("loginByAuth0", (username, password) => {
       Cypress.log({ name: "auth0 cookie", message: "User is logged in" });
     } else {
       cy.location()
-        .should(
-          "satisfy",
-          (location: any) =>
-            location.host === Cypress.env("auth0_domain") && location.pathname === "/login"
-        )
+        .should("satisfy", isAuth0LoginPage)
         .then((location) => {
           if (location.pathname === "/login") {
             Cypress.log({ name: "auth0", message: "Perform Login" });
