@@ -7,6 +7,18 @@ import { format as formatDate } from "date-fns";
 let LOCAL_STORAGE_MEMORY: any = {};
 let LS_INCLUDE_KEYS: any = ["auth0AccessToken", "authState"];
 
+const saveLocalStorageAuthCache = () => {
+  LS_INCLUDE_KEYS.forEach((key: string) => {
+    LOCAL_STORAGE_MEMORY[key] = localStorage[key];
+  });
+};
+
+const restoreLocalStorageAuthCache = () => {
+  LS_INCLUDE_KEYS.forEach((key: string) => {
+    localStorage.setItem(key, LOCAL_STORAGE_MEMORY[key]);
+  });
+};
+
 Cypress.Commands.add("saveLocalStorageAuthCache", () => {
   LS_INCLUDE_KEYS.forEach((key: string) => {
     LOCAL_STORAGE_MEMORY[key] = localStorage[key];
@@ -327,6 +339,9 @@ Cypress.Commands.add("auth0EnterUserCredentials", (username, password) => {
   cy.auth0AllowApp();
 });
 
+Cypress.Cookies.defaults({
+  whitelist: new RegExp(/(auth0|did|a0.*)/g),
+});
 Cypress.Commands.add("loginByAuth0", (username, password) => {
   // See https://github.com/cypress-io/cypress/issues/408 needed to clear all cookies from all domains
   // @ts-ignore
@@ -337,17 +352,14 @@ Cypress.Commands.add("loginByAuth0", (username, password) => {
   // whitelist: ["auth0", "auth0.is.authenticated", "did", "did_compat"],
   // a0.spajs.txs
 
-  cy.visit("/");
-
-  Cypress.on("window:before:load", (win) => {
-    cy.wait(500);
+  cy.visit("/", {
+    onBeforeLoad: (win) => {
+      //cy.wait(500);
+      //restoreLocalStorageAuthCache();
+    },
   });
 
-  cy.restoreLocalStorageAuthCache();
   // /(auth0.*|did.*|a0.*|OptanonConsent.*|_hjid.*|_hp2_id.*|_ga.*|ga_.*|_gid.*|ajs_.*|_gcl.*)/g
-  Cypress.Cookies.defaults({
-    whitelist: new RegExp(/(auth0|did|a0.*)/g),
-  });
 
   //cy.get("#login").should("exist");
   //cy.get("#login").click();
