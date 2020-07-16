@@ -372,15 +372,15 @@ Cypress.Commands.add("loginByAuth0", (username, password) => {
   cy.getCookie("auth0.is.authenticated").then((cookie) => {
     if (cookie) {
       Cypress.log({ name: "auth0 cookies", message: "User is logged in" });
-      console.log("Got cookie: ", cookie);
-      COOKIE_MEMORY["auth0.is.authenticated"] = cookie;
-      console.log("CM: ", COOKIE_MEMORY);
+      //console.log("Got cookie: ", cookie);
+      //COOKIE_MEMORY["auth0.is.authenticated"] = cookie;
+      //console.log("CM: ", COOKIE_MEMORY);
     } else {
-      console.log(COOKIE_MEMORY["auth0.is.authenticated"]);
+      /*console.log(COOKIE_MEMORY["auth0.is.authenticated"]);
       if (COOKIE_MEMORY["auth0.is.authenticated"]) {
         console.log("Set cookie");
         cy.setCookie("auth0.is.authenticated", "true", ...COOKIE_MEMORY["auth0.is.authenticated"]);
-      }
+      }*/
 
       //Cypress.log({ name: "in else", message: "User is NOT logged in" });
       cy.get("body").then(($body) => {
