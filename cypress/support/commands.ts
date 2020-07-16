@@ -352,12 +352,13 @@ Cypress.Commands.add("loginByAuth0", (username, password) => {
   // whitelist: ["auth0", "auth0.is.authenticated", "did", "did_compat"],
   // a0.spajs.txs
 
-  cy.visit("/", {
+  cy.visit("/");
+  /*cy.visit("/", {
     onBeforeLoad: (win) => {
       //cy.wait(500);
       //restoreLocalStorageAuthCache();
     },
-  });
+  });*/
 
   // /(auth0.*|did.*|a0.*|OptanonConsent.*|_hjid.*|_hp2_id.*|_ga.*|ga_.*|_gid.*|ajs_.*|_gcl.*)/g
 
@@ -367,12 +368,13 @@ Cypress.Commands.add("loginByAuth0", (username, password) => {
   // @ts-ignore
   cy.getCookies({ domain: null }).then((cookies) => {
     if (
-      cookies.find((cookie) => cookie.name === "auth0") &&
-      //cookies.find((cookie) => cookie.name === "auth0.is.authenticated") &&
-      cookies.find((cookie) => cookie.name === "did")
+      //cookies.find((cookie) => cookie.name === "auth0") &&
+      cookies.find((cookie) => cookie.name === "auth0.is.authenticated" && cookie.value)
+      //cookies.find((cookie) => cookie.name === "did")
     ) {
       Cypress.log({ name: "auth0 cookies", message: "User is logged in" });
     } else {
+      //Cypress.log({ name: "in else", message: "User is NOT logged in" });
       cy.get("body").then(($body) => {
         if ($body.find(".auth0-lock-name").length > 0) {
           cy.contains("auth0-cypress-demo").should("be.visible");
@@ -383,8 +385,8 @@ Cypress.Commands.add("loginByAuth0", (username, password) => {
         .should(
           "satisfy",
           (location: any) =>
-            (location.host === "localhost:3000" && location.pathname === "/") ||
-            (location.host === Cypress.env("auth0_domain") && location.pathname === "/login")
+            //(location.host === "localhost:3000" && location.pathname === "/") ||
+            location.host === Cypress.env("auth0_domain") && location.pathname === "/login"
         )
         .then((location) => {
           if (location.pathname === "/login") {
