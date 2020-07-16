@@ -4,34 +4,6 @@
 import { pick } from "lodash/fp";
 import { format as formatDate } from "date-fns";
 
-let COOKIE_MEMORY: any = {};
-let LOCAL_STORAGE_MEMORY: any = {};
-let LS_INCLUDE_KEYS: any = ["auth0AccessToken", "authState"];
-
-const saveLocalStorageAuthCache = () => {
-  LS_INCLUDE_KEYS.forEach((key: string) => {
-    LOCAL_STORAGE_MEMORY[key] = localStorage[key];
-  });
-};
-
-const restoreLocalStorageAuthCache = () => {
-  LS_INCLUDE_KEYS.forEach((key: string) => {
-    localStorage.setItem(key, LOCAL_STORAGE_MEMORY[key]);
-  });
-};
-
-Cypress.Commands.add("saveLocalStorageAuthCache", () => {
-  LS_INCLUDE_KEYS.forEach((key: string) => {
-    LOCAL_STORAGE_MEMORY[key] = localStorage[key];
-  });
-});
-
-Cypress.Commands.add("restoreLocalStorageAuthCache", () => {
-  LS_INCLUDE_KEYS.forEach((key: string) => {
-    localStorage.setItem(key, LOCAL_STORAGE_MEMORY[key]);
-  });
-});
-
 Cypress.Commands.add("getBySel", (selector, ...args) => {
   return cy.get(`[data-test=${selector}]`, ...args);
 });
@@ -340,68 +312,29 @@ Cypress.Commands.add("auth0EnterUserCredentials", (username, password) => {
   cy.auth0AllowApp();
 });
 
+// Preserve Auth0 authenticated Cookie
 Cypress.Cookies.defaults({
   whitelist: "auth0.is.authenticated",
-  //whitelist: new RegExp(/(auth0.*|did|a0.*)/g),
-  //whitelist: new RegExp(/(auth0.is.authenticated|did|a0.*)/g),
 });
+
 Cypress.Commands.add("loginByAuth0", (username, password) => {
-  // See https://github.com/cypress-io/cypress/issues/408 needed to clear all cookies from all domains
-  // @ts-ignore
-  // cy.clearCookies({ domain: null });
-
-  // Preserve Auth0 Cookies
-  // https://docs.cypress.io/faq/questions/using-cypress-faq.html#How-do-I-preserve-cookies-localStorage-in-between-my-tests
-  // whitelist: ["auth0", "auth0.is.authenticated", "did", "did_compat"],
-  // a0.spajs.txs
-
   cy.visit("/");
-  /*cy.visit("/", {
-    onBeforeLoad: (win) => {
-      //cy.wait(500);
-      //restoreLocalStorageAuthCache();
-    },
-  });*/
 
-  // /(auth0.*|did.*|a0.*|OptanonConsent.*|_hjid.*|_hp2_id.*|_ga.*|ga_.*|_gid.*|ajs_.*|_gcl.*)/g
-
-  //cy.get("#login").should("exist");
-  //cy.get("#login").click();
-
-  // @ts-ignore
   cy.getCookie("auth0.is.authenticated").then((cookie) => {
     if (cookie) {
-      Cypress.log({ name: "auth0 cookies", message: "User is logged in" });
-      //console.log("Got cookie: ", cookie);
-      //COOKIE_MEMORY["auth0.is.authenticated"] = cookie;
-      //console.log("CM: ", COOKIE_MEMORY);
+      Cypress.log({ name: "auth0 cookie", message: "User is logged in" });
     } else {
-      /*console.log(COOKIE_MEMORY["auth0.is.authenticated"]);
-      if (COOKIE_MEMORY["auth0.is.authenticated"]) {
-        console.log("Set cookie");
-        cy.setCookie("auth0.is.authenticated", "true", ...COOKIE_MEMORY["auth0.is.authenticated"]);
-      }*/
-
-      //Cypress.log({ name: "in else", message: "User is NOT logged in" });
-      cy.get("body").then(($body) => {
-        if ($body.find(".auth0-lock-name").length > 0) {
-          cy.contains("auth0-cypress-demo").should("be.visible");
-        }
-      });
-
       cy.location()
         .should(
           "satisfy",
           (location: any) =>
-            //(location.host === "localhost:3000" && location.pathname === "/") ||
             location.host === Cypress.env("auth0_domain") && location.pathname === "/login"
         )
         .then((location) => {
           if (location.pathname === "/login") {
-            console.log("perform login", location.pathname);
+            Cypress.log({ name: "auth0", message: "Perform Login" });
             cy.auth0AllowApp();
             cy.auth0EnterUserCredentials(username, password);
-            cy.saveLocalStorageAuthCache();
           }
         });
     }

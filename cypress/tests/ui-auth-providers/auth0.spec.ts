@@ -5,15 +5,12 @@ describe("Auth0", function () {
     cy.task("db:seed");
 
     cy.server();
-    cy.route("GET", "/bankAccounts").as("getBankAccounts");
     cy.route("POST", "/bankAccounts").as("createBankAccount");
 
     cy.loginByAuth0(Cypress.env("auth0_username"), Cypress.env("auth0_password"));
   });
 
   it("should allow a visitor to login, onboard and logout", function () {
-    //cy.wait("@getBankAccounts");
-
     cy.contains("Get Started").should("be.visible");
 
     // Onboarding
@@ -36,23 +33,15 @@ describe("Auth0", function () {
     cy.getBySel("transaction-list").should("be.visible");
 
     // Logout User
-    /*
     if (isMobile()) {
       cy.getBySel("sidenav-toggle").click();
     }
     cy.getBySel("sidenav-signout").click();
 
     cy.location("pathname").should("eq", "/");
-    */
   });
 
   it("shows onboarding", function () {
     cy.contains("Get Started").should("be.visible");
-    /*
-    cy.getBySel("sidenav-user-settings").click();
-
-    cy.getBySel("user-settings-form").should("be.visible");
-    cy.location("pathname").should("include", "/user/settings");
-    */
   });
 });
