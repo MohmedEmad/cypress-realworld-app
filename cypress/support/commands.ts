@@ -5,7 +5,7 @@ import { pick } from "lodash/fp";
 import { format as formatDate } from "date-fns";
 
 let LOCAL_STORAGE_MEMORY: any = {};
-let LS_INCLUDE_KEYS: any = ["auth0AccessToken"];
+let LS_INCLUDE_KEYS: any = ["auth0AccessToken", "authState"];
 
 Cypress.Commands.add("saveLocalStorageAuthCache", () => {
   LS_INCLUDE_KEYS.forEach((key: string) => {
@@ -337,20 +337,26 @@ Cypress.Commands.add("loginByAuth0", (username, password) => {
   // whitelist: ["auth0", "auth0.is.authenticated", "did", "did_compat"],
   // a0.spajs.txs
 
-  cy.restoreLocalStorageAuthCache();
-  Cypress.Cookies.defaults({
-    whitelist: new RegExp(
-      /(auth0.*|did.*|a0.*|OptanonConsent.*|_hjid.*|_hp2_id.*|_ga.*|ga_.*|_gid.*|ajs_.*|_gcl.*)/g
-    ),
+  cy.visit("/");
+
+  Cypress.on("window:before:load", (win) => {
+    cy.wait(500);
   });
 
-  cy.visit("/");
+  cy.restoreLocalStorageAuthCache();
+  // /(auth0.*|did.*|a0.*|OptanonConsent.*|_hjid.*|_hp2_id.*|_ga.*|ga_.*|_gid.*|ajs_.*|_gcl.*)/g
+  Cypress.Cookies.defaults({
+    whitelist: new RegExp(/(auth0|did|a0.*)/g),
+  });
+
+  //cy.get("#login").should("exist");
+  //cy.get("#login").click();
 
   // @ts-ignore
   cy.getCookies({ domain: null }).then((cookies) => {
     if (
       cookies.find((cookie) => cookie.name === "auth0") &&
-      cookies.find((cookie) => cookie.name === "auth0.is.authenticated") &&
+      //cookies.find((cookie) => cookie.name === "auth0.is.authenticated") &&
       cookies.find((cookie) => cookie.name === "did")
     ) {
       Cypress.log({ name: "auth0 cookies", message: "User is logged in" });
@@ -361,15 +367,21 @@ Cypress.Commands.add("loginByAuth0", (username, password) => {
         }
       });
 
-      cy.location("pathname").then((pathname) => {
-        console.log("pathname", pathname);
-        if (pathname.includes("login")) {
-          console.log("perform login", pathname);
-          cy.auth0AllowApp();
-          cy.auth0EnterUserCredentials(username, password);
-          cy.saveLocalStorageAuthCache();
-        }
-      });
+      cy.location()
+        .should(
+          "satisfy",
+          (location: any) =>
+            (location.host === "localhost:3000" && location.pathname === "/") ||
+            (location.host === Cypress.env("auth0_domain") && location.pathname === "/login")
+        )
+        .then((location) => {
+          if (location.pathname === "/login") {
+            console.log("perform login", location.pathname);
+            cy.auth0AllowApp();
+            cy.auth0EnterUserCredentials(username, password);
+            cy.saveLocalStorageAuthCache();
+          }
+        });
     }
   });
 });

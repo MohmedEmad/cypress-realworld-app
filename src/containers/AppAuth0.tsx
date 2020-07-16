@@ -25,6 +25,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const AppAuth0: React.FC = () => {
+  console.log("AppAuth0");
   const { isAuthenticated, user, getAccessTokenSilently } = useAuth0();
   const classes = useStyles();
   const [authState] = useService(authService);
@@ -34,6 +35,7 @@ const AppAuth0: React.FC = () => {
 
   const [, , bankAccountsService] = useMachine(bankAccountsMachine);
 
+  console.log("BEFORE UE user:", user);
   useEffect(() => {
     (async function waitForToken() {
       const token = await getAccessTokenSilently();

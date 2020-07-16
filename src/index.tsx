@@ -19,8 +19,9 @@ const theme = createMuiTheme({
 const onRedirectCallback = (appState: any) => {
   history.replace((appState && appState.returnTo) || window.location.pathname);
 };
-
+console.log("index");
 if (process.env.REACT_APP_AUTH0) {
+  console.log("index : render auth0");
   ReactDOM.render(
     <Auth0Provider
       domain={process.env.REACT_APP_AUTH0_DOMAIN!}
