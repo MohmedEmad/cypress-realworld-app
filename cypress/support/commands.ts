@@ -4,6 +4,7 @@
 import { pick } from "lodash/fp";
 import { format as formatDate } from "date-fns";
 
+let COOKIE_MEMORY: any = {};
 let LOCAL_STORAGE_MEMORY: any = {};
 let LS_INCLUDE_KEYS: any = ["auth0AccessToken", "authState"];
 
@@ -340,7 +341,9 @@ Cypress.Commands.add("auth0EnterUserCredentials", (username, password) => {
 });
 
 Cypress.Cookies.defaults({
-  whitelist: new RegExp(/(auth0|did|a0.*)/g),
+  whitelist: "auth0.is.authenticated",
+  //whitelist: new RegExp(/(auth0.*|did|a0.*)/g),
+  //whitelist: new RegExp(/(auth0.is.authenticated|did|a0.*)/g),
 });
 Cypress.Commands.add("loginByAuth0", (username, password) => {
   // See https://github.com/cypress-io/cypress/issues/408 needed to clear all cookies from all domains
@@ -366,14 +369,19 @@ Cypress.Commands.add("loginByAuth0", (username, password) => {
   //cy.get("#login").click();
 
   // @ts-ignore
-  cy.getCookies({ domain: null }).then((cookies) => {
-    if (
-      //cookies.find((cookie) => cookie.name === "auth0") &&
-      cookies.find((cookie) => cookie.name === "auth0.is.authenticated" && cookie.value)
-      //cookies.find((cookie) => cookie.name === "did")
-    ) {
+  cy.getCookie("auth0.is.authenticated").then((cookie) => {
+    if (cookie) {
       Cypress.log({ name: "auth0 cookies", message: "User is logged in" });
+      console.log("Got cookie: ", cookie);
+      COOKIE_MEMORY["auth0.is.authenticated"] = cookie;
+      console.log("CM: ", COOKIE_MEMORY);
     } else {
+      console.log(COOKIE_MEMORY["auth0.is.authenticated"]);
+      if (COOKIE_MEMORY["auth0.is.authenticated"]) {
+        console.log("Set cookie");
+        cy.setCookie("auth0.is.authenticated", "true", ...COOKIE_MEMORY["auth0.is.authenticated"]);
+      }
+
       //Cypress.log({ name: "in else", message: "User is NOT logged in" });
       cy.get("body").then(($body) => {
         if ($body.find(".auth0-lock-name").length > 0) {

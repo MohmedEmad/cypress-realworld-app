@@ -36,15 +36,17 @@ describe("Auth0", function () {
     cy.getBySel("transaction-list").should("be.visible");
 
     // Logout User
+    /*
     if (isMobile()) {
       cy.getBySel("sidenav-toggle").click();
     }
     cy.getBySel("sidenav-signout").click();
 
     cy.location("pathname").should("eq", "/");
+    */
   });
 
-  it.skip("shows onboarding", function () {
+  it("shows onboarding", function () {
     cy.contains("Get Started").should("be.visible");
     /*
     cy.getBySel("sidenav-user-settings").click();
